@@ -1,7 +1,42 @@
 <!DOCTYPE html>
-<html><head><title>eBay Auth Accepted</title></head>
-<body style="font-family: sans-serif; padding: 40px; text-align: center;">
-<h1>✓ Authorization successful</h1>
-<p>You can close this window and return to the Listing Studio.</p>
-<script>setTimeout(() => window.close(), 2000);</script>
-</body></html>
+<html>
+<head>
+<title>eBay Auth — forwarding</title>
+<meta charset="utf-8">
+<style>
+body { font-family: -apple-system, sans-serif; padding: 60px; text-align: center; background: #F5F2EC; color: #1B1B1F; }
+h1 { font-weight: 500; }
+.spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid #E5E1D6; border-top-color: #B8472D; border-radius: 50%; animation: s 0.8s linear infinite; vertical-align: middle; }
+@keyframes s { to { transform: rotate(360deg); } }
+.err { color: #B91C1C; }
+code { background: #EDE9E0; padding: 2px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1><span class="spinner"></span> Forwarding to your local helper…</h1>
+<p>If this page does not redirect automatically, your local helper isn't running.</p>
+<p>Start it (double-click <code>start.bat</code>) and reload this page.</p>
+<div id="msg"></div>
+<script>
+const params = new URLSearchParams(window.location.search);
+const code = params.get('code');
+const state = params.get('state') || '';
+const error = params.get('error');
+const msg = document.getElementById('msg');
+
+if (error) {
+  msg.innerHTML = '<p class="err">eBay returned: ' + error + '</p>';
+} else if (code) {
+  // Forward to the local Python helper. The helper will exchange the code
+  // for an access token and store it. The user accepts the self-signed cert
+  // once on first run.
+  const target = 'https://localhost:8765/oauth/callback?code='
+    + encodeURIComponent(code)
+    + '&state=' + encodeURIComponent(state);
+  setTimeout(() => { window.location.href = target; }, 200);
+} else {
+  msg.innerHTML = '<p class="err">No authorization code in URL — something went wrong.</p>';
+}
+</script>
+</body>
+</html>
